@@ -24,10 +24,25 @@ coding/debugging.
    ./build.sh
    ```
 
-2. Copy the [boxed.sh](boxed.sh) script to your local path for easier access:
+2. Copy the [boxed.sh](boxed.sh) script to a directory in your PATH for easier
+   access from any directory:
    ```bash
+   # Option 1: Personal bin directory (common for many users)
+   mkdir -p ~/bin  # Create bin directory if it doesn't exist
    cp boxed.sh ~/bin/boxed
-   chmod +x ~/bin/boxed
+   chmod +x ~/bin/boxed  # Ensure it's executable
+
+   # Ensure the directory is in your PATH
+   # For bash users, add to ~/.bashrc or ~/.profile if needed:
+   # export PATH="$HOME/bin:$PATH"
+
+   # Option 2: Other common user locations depending on your distro
+   # cp boxed.sh ~/.local/bin/boxed
+   # chmod +x ~/.local/bin/boxed
+
+   # Option 3: System-wide installation (requires admin privileges)
+   # sudo cp boxed.sh /usr/local/bin/boxed
+   # sudo chmod a+x /usr/local/bin/boxed  # Make executable by all users
    ```
 
 3. Navigate to your work directory where you want CycoD to operate:

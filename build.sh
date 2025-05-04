@@ -26,6 +26,8 @@ ARGS_AND_DEFAULTS=(
    # This is the variant of the boxed image
    # that we will build.  Note that this will
    # be used in the tag of the image.
+   # Special 'ALL' variant for build will build all
+   # of the available variants in the Dockerfile
    variant=large
 
    # This is the docker image name to use for
@@ -234,11 +236,16 @@ fi
 
 # Check if the docker file has the variant
 if [ -f "${dockerfile}" ]; then
-   if ! grep -q "^FROM .* AS ${variant}" "${dockerfile}"; then
-      [ "${variant}" = "help" ] || _error "Variant '${variant}' not found!"
-      echo >&2 "Available variants:"
-      awk '/^FROM .* AS /{ print "  " $4 }' "${dockerfile}" | sort >&2
-      exit 1
+   variants=${variant}
+   if [ "${variant}" = "ALL" ]; then
+      variants=$(awk '/^FROM .* AS /{ print $4 }' "${dockerfile}")
+   else
+      if ! grep -q "^FROM .* AS ${variant}" "${dockerfile}"; then
+         [ "${variant}" = "help" ] || _error "Variant '${variant}' not found!"
+         echo >&2 "Available variants:"
+         awk '/^FROM .* AS /{ print "  " $4 }' "${dockerfile}" | sort >&2
+         exit 1
+      fi
    fi
 else
    _error "Could not find Dockerfile: '${dockerfile}'"
@@ -255,17 +262,18 @@ fi
 # If we are not building from local source, we change the build context to here
 [ "${from}" = "source" ] || cycod_source=$(dirname "${dockerfile}")
 
-# If we are above level 2 verbosity, turn on tracing here...
+# If we are above level 0 verbosity, turn on tracing here...
 [[ ${verbosity} -gt 0 ]] && set -x
-
-exec docker build \
-   --build-arg "CLEANUP=${cleanup}" \
-   --build-arg "CYCOD_FROM=${from}" \
-   --build-arg "CYCOD_BUILD=${build_type}" \
-   --build-arg "CYCOD_BRANCH=${git_branch}" \
-   ${progress+--progress ${progress}} \
-   ${platform+--platform ${platform}} \
-   --target ${variant} \
-   --file "${dockerfile}" \
-   --tag ${boxed_image}:${variant} \
-   "${cycod_source}"
+for variant in $variants; do
+   docker build \
+      --build-arg "CLEANUP=${cleanup}" \
+      --build-arg "CYCOD_FROM=${from}" \
+      --build-arg "CYCOD_BUILD=${build_type}" \
+      --build-arg "CYCOD_BRANCH=${git_branch}" \
+      ${progress+--progress ${progress}} \
+      ${platform+--platform ${platform}} \
+      --target ${variant} \
+      --file "${dockerfile}" \
+      --tag ${boxed_image}:${variant} \
+      "${cycod_source}"
+done

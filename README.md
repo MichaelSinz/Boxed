@@ -1,9 +1,9 @@
 # Boxed - a safer way to run [CycoD](https://github.com/robch/cycod/)
 
-Boxed is a containerization solution for running the CycoD AI coding tool in a
-safer, controlled Docker environment.  CycoD is an AI-powered tool that can
-write, compile, and test code, and Boxed provides a secure sandbox to prevent
-accidental damage to your system while allowing CycoD to function fully.
+Boxed is a containerization solution that keeps the CycoD AI coding tool safely
+contained in a controlled Docker environment.  CycoD is an AI-powered tool that
+can write, compile, and test code, and Boxed provides a secure "box" to
+prevent accidental damage to your system while allowing CycoD to function.
 
 This directory has a [build script](build.sh), a multi-target [Dockerfile](Dockerfile),
 and the [boxed script](boxed.sh) that runs a docker container with your work
@@ -133,8 +133,8 @@ We would actually welcome additional variants or updates to our variants to
 improve the example, but you are not constrained to our specific configurations
 or even our specific [build.sh](build.sh) script to build them.
 
-The only thing you want to do is structure a few things like we have in our
-image.  Best to look at the "base" image in our Dockerfiles.
+For more detailed information on [custom images](CUSTOM_IMAGES.md), see
+the [CUSTOM_IMAGES.md](CUSTOM_IMAGES.md) document.
 
 ### Azure Linux dotnet SDK - Available Variants
 
@@ -202,25 +202,25 @@ When using `--cleanup false` with `--from git` or `--from source`, the CycoD
 source code will be preserved in the container.  This is useful for debugging
 CycoD itself but will increase the container size significantly.
 
-For the boxed script:
+For the [boxed](boxed.sh) script: (assuming you installed it in the path)
 ```bash
 # Show quick help
-./boxed.sh -h
+boxed -h
 
 # Show long help
-./boxed.sh --help
+boxed --help
 
 # Use a specific variant
-./boxed.sh --variant python
+boxed --variant python
 
 # Use a specific working directory
-./boxed.sh --dir /path/to/project
+boxed --dir /path/to/project
 
 # Run a command non-interactively
-./boxed.sh -- cycod --help
+boxed -- cycod --help
 
 # Specify a custom name for the container
-./boxed.sh --boxed-name my-project-container
+boxed --boxed-name my-project-container
 ```
 
 ### Running Commands in the Container
@@ -229,7 +229,7 @@ You can run commands directly in the container instead of entering an
 interactive shell:
 
 ```bash
-./boxed.sh -- cycod create-project --type console-app
+boxed -- cycod create-project --type console-app
 ```
 
 This will start the container, run the specified command, and exit.
@@ -256,9 +256,9 @@ extensible.
 
 ## Security Considerations
 
-Boxed provides several security benefits:
+Boxed provides several security benefits to keep CycoD properly contained:
 
-1. **Isolation**: CycoD operates in a container isolated from your host system
+1. **Isolation**: CycoD is Boxed into a container, separated from your host system
 2. **Limited access**: CycoD can only access files in your work directory and
    the mounted .cycod directory
 3. **User permissions**: The container runs with your user ID, preventing
@@ -290,9 +290,9 @@ More advanced namespace controls for running the container are possible but
 not yet implemented.  As tools like CycoD get more powerful, mechanisms like
 Boxed will continue to evolve to help constrain and enable them.
 
-Boxed significantly reduces risk compared to running CycoD directly on your
-system, but you should still exercise caution with the code it generates and
-executes.
+Keeping CycoD Boxed significantly reduces risk compared to letting it run free
+on your system, but you should still exercise caution with the code it generates
+and executes.
 
 ## Troubleshooting
 
@@ -342,8 +342,9 @@ Boxed has been tested with:
 
 ## Future Work
 
-As tools like CycoD become more powerful, mechanisms like Boxed will be needed
-to help constrain and enable them.  Planned improvements include:
+As tools like CycoD become more powerful, properly Boxing them will be
+increasingly important to both constrain and enable them.  Planned improvements
+include:
 
 - Advanced namespace controls for additional security
 - Windows-native support improvements
@@ -351,7 +352,7 @@ to help constrain and enable them.  Planned improvements include:
 - Integration with container orchestration for multi-container scenarios
 
 Note that building your own images to be used with Boxed should be rather
-straight forward.  The [Dockerfile](Dockerfile) is both a useful set of
+straightforward.  The [Dockerfile](Dockerfile) is both a useful set of
 images and an example of how to do this.
 
 ## Why Was Boxed Created?

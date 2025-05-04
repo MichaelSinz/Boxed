@@ -9,6 +9,7 @@
 # already installed.  Now, Azure Linux is based on RPM and not DPKG/APT
 # so it works a bit differently.  This is mainly here to show another
 # example and for those who would rather build their own dev images.
+# It also is slightly different in a few other minor ways.
 
 # This is the official Microsoft image for dotnet and Azure Linux 3.0
 
@@ -129,27 +130,22 @@ FROM base AS rust
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then rustc, cargo, rustfmt, clippy, etc.  With this you can use cycod
 # and develop/test Rust (C# and PowerShell due to it being here for cycod)
+# (Rust happens to also include c/c++ tools too)
 
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.
 ARG CLEANUP=true
 
-# Install rust - we want to use rustup for this as it gets newer rust versions
-# We also skip installing rust documentation as it is large and not needed here.
-# This happens to work in all Linux distros, so does not depend on if base image
-# is a specific distro or not.
-ENV RUSTUP_HOME=/usr/local/rustup
-ENV PATH=/usr/local/cargo/bin:$PATH
-RUN <<INSTALL_RUST
-    echo "Rust install"
+RUN <<INSTALL
+    echo "c-cpp install"
     set -e
     set -x
-    cd /root
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /root/rust-install.sh
-    chmod +x /root/rust-install.sh
-    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt
-    [ "${CLEANUP}" != "true" ] || rm /root/rust-install.sh
-INSTALL_RUST
+    tdnf -y install rust
+
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
+INSTALL
+
 
 
 ############ c-cpp #############################################
@@ -303,7 +299,7 @@ INSTALL
 
 
 ############ large #############################################
-FROM rust AS large
+FROM typescript AS large
 # This is the "large" Docker image for AI coding agent - it has many languages
 # installed starting with the C# needd for the CycoD tools but then
 # adding: C, C++, Rust, Java, golang, JavaScipt (nodejs), TypeScript, Perl,
@@ -317,8 +313,8 @@ FROM rust AS large
 # mind these days.)  We really don't need all of these but this
 # container is the "Swiss Army Knife" of AI coding containers.
 #
-# We start from the rust image as it already has rust in it.  Now we add
-# the rest of the stuff.
+# We start from the typescript image as it already has nodejs/etc in it.
+# Now we add the rest of the stuff.
 
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.
@@ -335,23 +331,13 @@ RUN <<INSTALL
         gcc-c++ \
         golang \
         less \
-        nodejs \
-        npm \
         java-21-openjdk-devel \
         python3 \
         python3-pip \
         ruby \
+        rust \
         vim
 
     [ "${CLEANUP}" != "true" ] || tdnf clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
-
-# We may want typescript too!
-RUN <<INSTALL_TYPESCRIPT
-    echo "Typescript install"
-    set -e
-    set -x
-    npm install -g typescript
-    [ "${CLEANUP}" != "true" ] || rm -rf /root/.npm
-INSTALL_TYPESCRIPT

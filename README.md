@@ -144,7 +144,7 @@ different as this is based on Azure Linux and not Ubuntu.
 
 | Variant     | Description                                          | Included Languages & Tools                                               |  Size     |
 |-------------|------------------------------------------------------|--------------------------------------------------------------------------|-----------|
-| `large`     | Complete development environment with many languages | C#, C/C++, Rust, Java, Go, Node.js, TypeScript, Python, Ruby, PowerShell | 2.91 GB   |
+| `large`     | Complete development environment with many languages | C#, C/C++, Rust, Java, Go, Node.js, TypeScript, Python, Ruby, PowerShell | 2.75 GB   |
 | `c-cpp`     | C/C++ development environment                        | C, C++, gcc, g++, gdb                                                    | 1.53 GB   |
 | `c-sharp`   | C# development environment                           | C#, .NET SDK, PowerShell                                                 | 1.22 GB   |
 | `go`        | Go development environment                           | Go                                                                       | 1.48 GB   |
@@ -152,7 +152,7 @@ different as this is based on Azure Linux and not Ubuntu.
 | `nodejs`    | Node.js development environment                      | Node.js, npm                                                             | 1.30 GB   |
 | `python`    | Python development environment                       | Python3, pip                                                             | 1.24 GB   |
 | `ruby`      | Ruby development environment                         | Ruby                                                                     | 1.27 GB   |
-| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.82 GB   |
+| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.89 GB   |
 | `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.32 GB   |
 
 

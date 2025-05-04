@@ -1,4 +1,4 @@
-# Boxed - a safer way to run CycoD
+# Boxed - a safer way to run [CycoD](https://github.com/robch/cycod/)
 
 Boxed is a containerization solution for running the CycoD AI coding tool in a
 safer, controlled Docker environment.  CycoD is an AI-powered tool that can

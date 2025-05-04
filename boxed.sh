@@ -2,7 +2,7 @@
 # Copyright 2025 - Michael Sinz
 #
 # This script is the wrapper to the docker images that
-# contain the ChatX coding agent and tools.  It lets you
+# contain the CycoD coding agent and tools.  It lets you
 # run the agent in a relatively safe environment while still
 # allowing it to make changes, compile, test, and even debug
 # the code.  (Within reason)
@@ -271,7 +271,7 @@ GROUP
 
 [[ ${verbosity} -gt 0 ]] && set -x
 exec docker run \
-   --platform linux/amd64 \
+   --platform ${platform} \
    --rm \
    --interactive \
    --tty \

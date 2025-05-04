@@ -36,7 +36,7 @@ ARGS_AND_DEFAULTS=(
 
    # During the image build, clean up any temporary data
    # in the image such as the apt cache or the source
-   # code of ChatX when building from source.  This makes
+   # code of CycoD when building from source.  This makes
    # smaller images if you need/want.
    cleanup=true
 
@@ -270,6 +270,7 @@ for variant in $variants; do
       --build-arg "CYCOD_FROM=${from}" \
       --build-arg "CYCOD_BUILD=${build_type}" \
       --build-arg "CYCOD_BRANCH=${git_branch}" \
+      --build-arg "CYCOD_HASH=${git_hash}" \
       ${progress+--progress ${progress}} \
       ${platform+--platform ${platform}} \
       --target ${variant} \

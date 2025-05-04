@@ -271,7 +271,7 @@ INSTALL
 FROM base AS go
 # This is effectively an example Go boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
-# and then the Go sdk (and make).  With this you can use cycod
+# and then the Go sdk.  With this you can use cycod
 # and develop/test Go (C# and PowerShell due to it being here for cycod)
 
 # If set to true, we try to clean up any temp items and build directories
@@ -293,10 +293,10 @@ INSTALL
 
 ############ ruby #############################################
 FROM base AS ruby
-# This is effectively an example Go boxed container for cycod
+# This is effectively an example Ruby boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
-# and then the Go sdk (and make).  With this you can use cycod
-# and develop/test Go (C# and PowerShell due to it being here for cycod)
+# and then Ruby.  With this you can use cycod
+# and develop/test Ruby (C# and PowerShell due to it being here for cycod)
 
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.
@@ -318,9 +318,9 @@ INSTALL
 ############ large #############################################
 FROM rust AS large
 # This is the "large" Docker image for AI coding agent - it has many languages
-# installed starting with the C# needd for the ChatX and mdx tools but then
+# installed starting with the C# needd for the CycoD tools but then
 # adding: C, C++, Rust, Java, golang, JavaScipt (nodejs), TypeScript, Perl,
-# Python3, Ruby, and PowerShell (because ChatX uses it sometimes).  We also
+# Python3, Ruby, and PowerShell (because CycoD uses it sometimes).  We also
 # include gdb for debugging, make and cmake for build coordination, file,
 # rsync, git, and the normal Unix/Linux tools such as grep, sed, awk, etc.
 #

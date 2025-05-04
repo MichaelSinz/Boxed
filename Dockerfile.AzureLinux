@@ -4,45 +4,41 @@
 # but related in that you may wish specific variations of the image.
 # What this allows is for us to good build caching of common parts and also
 # have reasonably good decomposition of the larger bits.
+#
+# NOTE - This version is based on Azure Linux 3.0 with the dotnet SDK 8.0
+# already installed.  Now, Azure Linux is based on RPM and not DPKG/APT
+# so it works a bit differently.  This is mainly here to show another
+# example and for those who would rather build their own dev images.
+
+# This is the official Microsoft image for dotnet and Azure Linux 3.0
 
 ############ Base toolset install #############################################
-FROM ubuntu:24.04 AS base
-# The base tool install requires dotnet and then the tool itself.
+FROM mcr.microsoft.com/dotnet/sdk:8.0-azurelinux3.0 AS base
+# This starts with dotnet SDK already set up.
 # Note that this is basically a C-Sharp environment so we will be able to
 # use it as such too.  We also include git & rsync such that we can build CycoD
 # and Powershell as SycoD likes to use it.  Plus, we install make and gdb as
-# they are useful in most all environments.
+# they are useful in most all environments.  (And curl as it is needed too)
 
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.
 ARG CLEANUP=true
 
-# We need to install .Net SDK which requires curl and lsb-release to get
-# the Microsoft repo added to the apt repos.  The SDK is needed for AI tool.
-# It also happens to give us C# development capabilities.
-ENV DEBIAN_FRONTEND=noninteractive
 RUN <<INSTALL
     echo "Base install"
     set -e
     set -x
 
-    # Now get ready for installing dotnet (since the tool needs it)
-    apt-get -qq update
-    apt-get install -y \
-        curl \
-        lsb-release
-    curl -L https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb
-    dpkg -i /tmp/packages-microsoft-prod.deb
-    rm /tmp/packages-microsoft-prod.deb
+    # gdb install "fails" after successfully installing due to one
+    # of the lesser used extra features not being able to configure systemd
+    # We do not care about the failure and neither does tdnf after the
+    # first time.  Thus, this just ignores it and lets the next install
+    # validate that it actually worked.
+    tdnf -y install gdb || true
 
-    # Now install:
-    #     dotnet (required)
-    #     git (required to build from git and to make local git commits)
-    #     powershell (useful)
-    #     rsync (required when building from source)
-    apt-get -qq update
-    apt-get install -y \
-        dotnet-sdk-8.0 \
+    # Install required packages for dotnet and our base feature set
+    tdnf -y install \
+        curl \
         gdb \
         git \
         make \
@@ -54,8 +50,8 @@ RUN <<INSTALL
     mkdir -m 777 -p /workspace
 
     # Cleanup the temporary stuff that is not actually needed
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 # Set our tool's bin directory and add it to the path
@@ -171,14 +167,10 @@ RUN <<INSTALL
     echo "c-cpp install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
-        cmake \
-        g++ \
-        gcc
+    tdnf -y install cmake gcc gcc-c++ make
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 
@@ -192,13 +184,12 @@ RUN <<INSTALL
     echo "Node.js install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
+    tdnf -y install \
         nodejs \
         npm
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 
@@ -233,12 +224,11 @@ RUN <<INSTALL
     echo "Java install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
-        openjdk-21-jdk
+    tdnf -y install \
+        java-21-openjdk-devel
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 
@@ -257,13 +247,12 @@ RUN <<INSTALL
     echo "Python install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
-        pip \
-        python3
+    tdnf -y install \
+        python3 \
+        python3-pip
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 
@@ -282,12 +271,11 @@ RUN <<INSTALL
     echo "Go install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
+    tdnf -y install \
         golang
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 
@@ -306,12 +294,11 @@ RUN <<INSTALL
     echo "Ruby install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
-        ruby-full
+    tdnf -y install \
+        ruby
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 
@@ -341,24 +328,23 @@ RUN <<INSTALL
     echo "Large install"
     set -e
     set -x
-    apt-get -qq update
-    apt-get install -y \
+    tdnf -y install \
         cmake \
         file \
-        g++ \
         gcc \
+        gcc-c++ \
         golang \
         less \
         nodejs \
         npm \
-        openjdk-21-jdk \
-        pip \
+        java-21-openjdk-devel \
         python3 \
-        ruby-full \
+        python3-pip \
+        ruby \
         vim
 
-    [ "${CLEANUP}" != "true" ] || apt-get clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
 INSTALL
 
 # We may want typescript too!

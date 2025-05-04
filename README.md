@@ -51,20 +51,24 @@ The default boxed image is a relatively large one that has many tools and
 languages in it.  It is flexible enough for most project types, but you can
 build smaller variants specialized for particular development needs.
 
+In the provided Dockerfile, we have every image getting dotnet SDK since it
+is basically needed for the AI tool itself.  We also have some common Unix
+tools plus git, curl, make, and Powershell (which the AI agent likes to use)
+
 ### Available Variants
 
 | Variant     | Description                                          | Included Languages & Tools                                               |  Size     |
 |-------------|------------------------------------------------------|--------------------------------------------------------------------------|-----------|
 | `large`     | Complete development environment with many languages | C#, C/C++, Rust, Java, Go, Node.js, TypeScript, Python, Ruby, PowerShell | 3.15 GB   |
 | `c-cpp`     | C/C++ development environment                        | C, C++, gcc, g++, gdb                                                    | 1.29 GB   |
-| `c-sharp`   | C# development environment                           | C#, .NET SDK, PowerShell                                                 | 0.92 GB   |
-| `go`        | Go development environment                           | Go                                                                       | 1.40 GB   |
-| `java`      | Java development environment                         | OpenJDK                                                                  | 1.65 GB   |
-| `nodejs`    | Node.js development environment                      | Node.js, npm                                                             | 1.66 GB   |
-| `python`    | Python development environment                       | Python3, pip                                                             | 1.28 GB   |
-| `ruby`      | Ruby development environment                         | Ruby                                                                     | 0.97 GB   |
-| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.52 GB   |
-| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.68 GB   |
+| `c-sharp`   | C# development environment                           | C#, .NET SDK, PowerShell                                                 | 0.98 GB   |
+| `go`        | Go development environment                           | Go                                                                       | 1.46 GB   |
+| `java`      | Java development environment                         | OpenJDK                                                                  | 1.69 GB   |
+| `nodejs`    | Node.js development environment                      | Node.js, npm                                                             | 1.69 GB   |
+| `python`    | Python development environment                       | Python3, pip                                                             | 1.32 GB   |
+| `ruby`      | Ruby development environment                         | Ruby                                                                     | 1.04 GB   |
+| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.58 GB   |
+| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.71 GB   |
 
 More variants are bound to be added and sizes are variable based on platform
 and updates to those tools over time.
@@ -97,6 +101,46 @@ You can select a variant in two ways:
    ./boxed.sh --variant c-sharp
    ```
 
+### Using your own Dockerfile
+
+The [build.sh](build.sh) script takes a parameter as to the Dockerfile to use.
+The default is our [Dockerfile](Dockerfile) but it can use others, such as
+the example alternative version that based on Microsoft's official dotnet Azure
+Linux 3.0 image.  See [Dockerfile.AzureLinux](Dockerfile.AzureLinux)
+
+You can also use your own image, as long as it has the tool installed in it.
+The [boxed.sh](boxed.sh) script does not care as long as it is a Linux/Unix-like
+image and is prepared with the right path and tools.  If you need a special
+programming environment and unique tools, just make that image.  Either with
+your own Dockerfile or by adding a variant to our example Dockerfile.
+
+We would actually welcome additional variants or updates to our variants to
+improve the example, but you are not constrained to our specific configurations
+or even our specific [build.sh](build.sh) script to build them.
+
+The only thing you want to do is structure a few things like we have in our
+image.  Best to look at the "base" image in our Dockerfiles.
+
+### Azure Linux dotnet SDK - Available Variants
+
+If you build with `--dockerfile Dockerfile.AzureLinux` we currently get image
+sizes as seen below.  Note that the exact versions of the various tools will be
+different as this is based on Azure Linux and not Ubuntu.
+
+| Variant     | Description                                          | Included Languages & Tools                                               |  Size     |
+|-------------|------------------------------------------------------|--------------------------------------------------------------------------|-----------|
+| `large`     | Complete development environment with many languages | C#, C/C++, Rust, Java, Go, Node.js, TypeScript, Python, Ruby, PowerShell | 2.91 GB   |
+| `c-cpp`     | C/C++ development environment                        | C, C++, gcc, g++, gdb                                                    | 1.53 GB   |
+| `c-sharp`   | C# development environment                           | C#, .NET SDK, PowerShell                                                 | 1.22 GB   |
+| `go`        | Go development environment                           | Go                                                                       | 1.48 GB   |
+| `java`      | Java development environment                         | OpenJDK                                                                  | 1.62 GB   |
+| `nodejs`    | Node.js development environment                      | Node.js, npm                                                             | 1.30 GB   |
+| `python`    | Python development environment                       | Python3, pip                                                             | 1.24 GB   |
+| `ruby`      | Ruby development environment                         | Ruby                                                                     | 1.27 GB   |
+| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.82 GB   |
+| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.32 GB   |
+
+
 ## Advanced Usage
 
 ### Environment Variables
@@ -117,7 +161,10 @@ its default.
 The build script offers several important options to customize your container:
 
 ```bash
-# Show help
+# Show quick help
+./build.sh -h
+
+# Show long help
 ./build.sh --help
 
 # Build a specific variant
@@ -142,7 +189,10 @@ CycoD itself but will increase the container size significantly.
 
 For the boxed script:
 ```bash
-# Show help
+# Show quick help
+./boxed.sh -h
+
+# Show long help
 ./boxed.sh --help
 
 # Use a specific variant
@@ -208,6 +258,11 @@ The containment ensures that CycoD:
 
 This makes it much safer to let CycoD write and execute code, even potentially
 risky operations like writing C code and running debuggers like gdb.
+
+Since the user's home directory is not exposed (just the .cycod directory and
+a read-only .gitconfig if it exists) we limit the exposure of other potential
+sensitive information that would be otherwise visible from the user's home
+directory, including browsing history, cookies, tokens, etc.
 
 However, it's important to understand that Docker containers are not perfect
 security boundaries:
@@ -296,17 +351,18 @@ installing them directly on the host system, keeping your environment clean.
 It also provides cross-platform compatibility, working cleanly on Mac and Linux
 environments, with work in progress for Windows.
 
-Originally created for a tool called "ChatX" which has since been refactored
-and renamed to "CycoD" (a rather fun pun).  The core motivation was to be able
-to let the AI write, compile, and test code (including running debuggers like
-gdb) without risking damage to the host system due to bugs in the AI or just
-random "run away" behavior that could happen.
+This was originally created for a tool called "ChatX" which has since been
+refactored and renamed to "CycoD" (a rather fun pun).  The core motivation was
+to be able to let the AI write, compile, and test code (including running
+debuggers like gdb) without risking damage to the host system due to bugs in
+the AI or just random "run-away" behavior that could happen.  In other words,
+keeping it in a box.
 
 ## Interesting Note
 
-The build.sh and boxed.sh scripts use a "declarative" argument parser for bash
-scripts.  This is a particularly elegant pattern where arguments are defined in
-one place and just work automatically.
+The [build.sh](build.sh) and [boxed.sh](boxed.sh) scripts use a "declarative"
+argument parser for bash scripts.  This is a particularly elegant pattern where
+arguments are defined in one place and just work automatically.
 
 I have written these kinds of declarative parsers in the past for Java, C#, and
 C but each had their own extra bit of twists based on the language.  I also

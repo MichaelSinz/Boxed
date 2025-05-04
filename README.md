@@ -15,9 +15,11 @@ coding/debugging.
 - Docker (latest stable version recommended)
 - Bash shell environment
 - Git (for building from source or version control integration)
-- Internet connection for initial container build
+- Internet connection (for building containers and accessing the AI)
 
 ## Quick Start
+
+**TL;DR**? go to [FAST_START.md](FAST_START.md)
 
 1. Build the boxed container by running the [build.sh](build.sh) script:
    ```bash

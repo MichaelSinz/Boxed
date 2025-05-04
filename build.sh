@@ -65,6 +65,12 @@ ARGS_AND_DEFAULTS=(
    # the docker build default is.
    progress=plain
 
+   # If this is set to true, try to push the image after
+   # it builds.  Warning:  You likely need to set the
+   # image name to include your repository information
+   # such that this works
+   push=false
+
    # This provides the plaform that Docker should be using
    # when it builds your container.  On the Mac, you can
    # have two different platforms:
@@ -277,4 +283,5 @@ for variant in $variants; do
       --file "${dockerfile}" \
       --tag ${boxed_image}:${variant} \
       "${cycod_source}" || exit 1
+   [[ ${push} == 'true' ]] && docker push ${boxed_image}:${variant}
 done

@@ -275,5 +275,5 @@ for variant in $variants; do
       --target ${variant} \
       --file "${dockerfile}" \
       --tag ${boxed_image}:${variant} \
-      "${cycod_source}"
+      "${cycod_source}" || exit 1
 done

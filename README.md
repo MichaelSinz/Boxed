@@ -56,13 +56,15 @@ build smaller variants specialized for particular development needs.
 | Variant     | Description                                          | Included Languages & Tools                                               |  Size     |
 |-------------|------------------------------------------------------|--------------------------------------------------------------------------|-----------|
 | `large`     | Complete development environment with many languages | C#, C/C++, Rust, Java, Go, Node.js, TypeScript, Python, Ruby, PowerShell | 3.15 GB   |
-| `c-sharp`   | C# development environment                           | C#, .NET SDK, PowerShell                                                 | 0.92 GB   |
 | `c-cpp`     | C/C++ development environment                        | C, C++, gcc, g++, gdb                                                    | 1.29 GB   |
-| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.52 GB   |
-| `nodejs`    | Node.js development environment                      | Node.js, npm                                                             | 1.66 GB   |
-| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.68 GB   |
+| `c-sharp`   | C# development environment                           | C#, .NET SDK, PowerShell                                                 | 0.92 GB   |
+| `go`        | Go development environment                           | Go                                                                       | 1.40 GB   |
 | `java`      | Java development environment                         | OpenJDK                                                                  | 1.65 GB   |
+| `nodejs`    | Node.js development environment                      | Node.js, npm                                                             | 1.66 GB   |
 | `python`    | Python development environment                       | Python3, pip                                                             | 1.28 GB   |
+| `ruby`      | Ruby development environment                         | Ruby                                                                     | 0.97 GB   |
+| `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.52 GB   |
+| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.68 GB   |
 
 More variants are bound to be added and sizes are variable based on platform
 and updates to those tools over time.

@@ -267,6 +267,54 @@ RUN <<INSTALL
 INSTALL
 
 
+############ go #############################################
+FROM base AS go
+# This is effectively an example Go boxed container for cycod
+# It has dotnet (which cycod needs) and PowerShell (which it wants)
+# and then the Go sdk (and make).  With this you can use cycod
+# and develop/test Go (C# and PowerShell due to it being here for cycod)
+
+# If set to true, we try to clean up any temp items and build directories
+# such that the image is smaller.
+ARG CLEANUP=true
+
+RUN <<INSTALL
+    echo "Go install"
+    set -e
+    set -x
+    apt-get -qq update
+    apt-get install -y \
+        golang
+
+    [ "${CLEANUP}" != "true" ] || apt-get clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+INSTALL
+
+
+############ ruby #############################################
+FROM base AS ruby
+# This is effectively an example Go boxed container for cycod
+# It has dotnet (which cycod needs) and PowerShell (which it wants)
+# and then the Go sdk (and make).  With this you can use cycod
+# and develop/test Go (C# and PowerShell due to it being here for cycod)
+
+# If set to true, we try to clean up any temp items and build directories
+# such that the image is smaller.
+ARG CLEANUP=true
+
+RUN <<INSTALL
+    echo "Ruby install"
+    set -e
+    set -x
+    apt-get -qq update
+    apt-get install -y \
+        ruby-full
+
+    [ "${CLEANUP}" != "true" ] || apt-get clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
+INSTALL
+
+
 ############ large #############################################
 FROM rust AS large
 # This is the "large" Docker image for AI coding agent - it has many languages

@@ -80,8 +80,8 @@ RUN --mount=type=bind,source=./,target=/source/ \
     <<BUILD
     mkdir -m 755 -p ${AI_TOOL_BIN}
     case "${CYCOD_FROM}" in
-        "install")
-            echo 'Installing from nuget ...'
+        "package")
+            echo 'Installing from package ...'
             dotnet tool install --tool-path ${AI_TOOL_BIN} CycoD --prerelease
             ;;
         "git")

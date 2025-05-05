@@ -327,9 +327,15 @@ and executes.
 ## Windows Support
 
 Currently, Boxed is primarily designed for Linux, macOS, and Unix-like
-environments.  Windows support that does not depend on WSL is still in
-development but since it works well with WSL2 and Docker (Docker desktop
-for Windows integration or native Linux Docker in WSL2 both work)
+environments.  On Windows, you need git installed in its default location
+and Docker Desktop for Windows set up to run Linux containers.
+
+There are two wrapper scripts, [build.cmd](build.cmd) and [boxed.cmd](boxed.cmd)
+that need to be in the same directory as their respective [build.sh](build.sh)
+and [boxed.sh](boxed.sh) counterparts.  As with Linux systems, you may wish to
+copy the [boxed.cmd](boxed.cmd) and [boxed.sh](boxed.sh) scripts (both together)
+to a directory that is in your path such that you can run the boxed command from
+anywhere.
 
 ## Version Compatibility
 

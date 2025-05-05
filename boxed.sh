@@ -275,6 +275,16 @@ GROUP
 # If the gitconfig file does not exist, unset the git_config variable
 [[ -f ${git_config} ]] || unset git_config
 
+# This MSYS_NO_PATHCONV is needed when running in MINGW bash (native on
+# windows, such as the bash that comes with Windows GIT)  It is totally
+# inert on Linux, even WSL.  The problem is that without this, arguments
+# that look like paths are converted to "Windows" paths, which is not
+# good when it is a path within the container or a path to an image.
+#
+# Note that this has been tested with GIT's bash and Docker Desktop
+# on Windows.
+export MSYS_NO_PATHCONV=1
+
 [[ ${verbosity} -gt 0 ]] && set -x
 exec docker run \
    --platform ${platform} \

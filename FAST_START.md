@@ -121,6 +121,15 @@ exit
 4. **Path issues**: If `boxed` command isn't found, verify `~/bin` is in your
    PATH with `echo $PATH`
 
+## Build your own
+
+While I have built these [Boxed Images](https://hub.docker.com/r/michaelsinz/boxed/tags)
+to help for a really fast start in using this, these images are not likely
+exactly what you need or updated on your schedule.  Please read the
+[README.md](README.md) and [CUSTOM_IMAGES.md](CUSTOM_IMAGES.md) for more details
+on building your own images.  It is simple to do and will give you the control
+you likely really want.
+
 ## Want More?
 
 For more details:

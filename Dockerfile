@@ -127,35 +127,6 @@ FROM base AS c-sharp
 # Not much to do here other than being here...
 
 
-############ rust ################################
-FROM base AS rust
-# This is effectively an example Rust boxed container for cycod
-# It has dotnet (which cycod needs) and PowerShell (which it wants)
-# and then rustc, cargo, rustfmt, clippy, etc.  With this you can use cycod
-# and develop/test Rust (C# and PowerShell due to it being here for cycod)
-
-# If set to true, we try to clean up any temp items and build directories
-# such that the image is smaller.
-ARG CLEANUP=true
-
-# Install rust - we want to use rustup for this as it gets newer rust versions
-# We also skip installing rust documentation as it is large and not needed here.
-# This happens to work in all Linux distros, so does not depend on if base image
-# is a specific distro or not.
-ENV RUSTUP_HOME=/usr/local/rustup
-ENV PATH=/usr/local/cargo/bin:$PATH
-RUN <<INSTALL_RUST
-    echo "Rust install"
-    set -e
-    set -x
-    cd /root
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /root/rust-install.sh
-    chmod +x /root/rust-install.sh
-    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt
-    [ "${CLEANUP}" != "true" ] || rm /root/rust-install.sh
-INSTALL_RUST
-
-
 ############ c-cpp #############################################
 FROM base AS c-cpp
 # This is effectively an example C/C++ boxed container for cycod
@@ -180,6 +151,36 @@ RUN <<INSTALL
     [ "${CLEANUP}" != "true" ] || apt-get clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
 INSTALL
+
+
+############ rust ################################
+FROM c-cpp AS rust
+# This is effectively an example Rust boxed container for cycod
+# It has dotnet (which cycod needs) and PowerShell (which it wants)
+# and then rustc, cargo, rustfmt, clippy, etc.  With this you can use cycod
+# and develop/test Rust (C# and PowerShell due to it being here for cycod)
+# Rust also needs C and the linker
+
+# If set to true, we try to clean up any temp items and build directories
+# such that the image is smaller.
+ARG CLEANUP=true
+
+# Install rust - we want to use rustup for this as it gets newer rust versions
+# We also skip installing rust documentation as it is large and not needed here.
+# This happens to work in all Linux distros, so does not depend on if base image
+# is a specific distro or not.
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV PATH=/usr/local/cargo/bin:$PATH
+RUN <<INSTALL_RUST
+    echo "Rust install"
+    set -e
+    set -x
+    cd /root
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /root/rust-install.sh
+    chmod +x /root/rust-install.sh
+    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt
+    [ "${CLEANUP}" != "true" ] || rm /root/rust-install.sh
+INSTALL_RUST
 
 
 ############ nodejs #############################################
@@ -330,8 +331,8 @@ FROM rust AS large
 # mind these days.)  We really don't need all of these but this
 # container is the "Swiss Army Knife" of AI coding containers.
 #
-# We start from the rust image as it already has rust in it.  Now we add
-# the rest of the stuff.
+# We start from the rust image as it already has rust and C/C++ in it.
+# Now we add the rest of the stuff.
 
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.

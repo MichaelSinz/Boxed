@@ -85,7 +85,7 @@ tools plus git, curl, make, and Powershell (which the AI agent likes to use)
 | `python`    | Python development environment                       | Python3, pip                                                             | 1.32 GB   |
 | `ruby`      | Ruby development environment                         | Ruby                                                                     | 1.04 GB   |
 | `rust`      | Rust development environment                         | Rust, Cargo, rustfmt, clippy                                             | 1.58 GB   |
-| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.71 GB   |
+| `typescript`| TypeScript development environment                   | Node.js, npm, TypeScript                                                 | 1.89 GB   |
 
 More variants are bound to be added and sizes are variable based on platform
 and updates to those tools over time.

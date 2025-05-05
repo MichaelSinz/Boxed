@@ -226,12 +226,18 @@ if true; then
    # Log the effective command line options we are running with
    # such that it would be easy to reproduce even if you had set some
    # of the values in your environment or via the command line.
+   # The trick to get the command line arguments to be printed with whatever
+   # escaping needed to get them to turn out correctly for the shell is to
+   # let the shell log it for us and we just clean it up.
    [[ ${verbosity} -gt 1 ]] && echo >&2 -e "\nRunning with these effective options:\n\n$(
-         echo -e -n "${BASH_SOURCE}"
+         declare -a effective_cmd_args=("${BASH_SOURCE}")
          for var in ${ARGS_AND_DEFAULTS[@]}; do
             key=${var/=*}
-            echo -n " --${key//_/-} \"${!key}\""
+            effective_cmd_args+=("--${key//_/-}" "${!key}")
          done
+         [[ ${#extra_args} -lt 1 ]] || effective_cmd_args+=("--" "${extra_args[@]}")
+         effective_cmd_line=$( (set -x; : "${effective_cmd_args[@]}") 2>&1 )
+         echo "${effective_cmd_line/*+ : }"
       )\n"
 fi
 # END of ARGUMENT PARSER

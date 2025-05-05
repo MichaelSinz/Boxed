@@ -1,0 +1,3 @@
+# The Dockerfile and the shell scripts should always be LF line enders
+*.sh text eol=lf
+Dockerfile* text eol=lf

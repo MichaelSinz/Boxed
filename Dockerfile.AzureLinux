@@ -124,30 +124,6 @@ FROM base AS c-sharp
 # Not much to do here other than being here...
 
 
-############ rust ################################
-FROM base AS rust
-# This is effectively an example Rust boxed container for cycod
-# It has dotnet (which cycod needs) and PowerShell (which it wants)
-# and then rustc, cargo, rustfmt, clippy, etc.  With this you can use cycod
-# and develop/test Rust (C# and PowerShell due to it being here for cycod)
-# (Rust happens to also include c/c++ tools too)
-
-# If set to true, we try to clean up any temp items and build directories
-# such that the image is smaller.
-ARG CLEANUP=true
-
-RUN <<INSTALL
-    echo "c-cpp install"
-    set -e
-    set -x
-    tdnf -y install rust
-
-    [ "${CLEANUP}" != "true" ] || tdnf clean all
-    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
-INSTALL
-
-
-
 ############ c-cpp #############################################
 FROM base AS c-cpp
 # This is effectively an example C/C++ boxed container for cycod
@@ -164,6 +140,29 @@ RUN <<INSTALL
     set -e
     set -x
     tdnf -y install cmake gcc gcc-c++ make
+
+    [ "${CLEANUP}" != "true" ] || tdnf clean all
+    [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
+INSTALL
+
+
+############ rust ################################
+FROM c-cpp AS rust
+# This is effectively an example Rust boxed container for cycod
+# It has dotnet (which cycod needs) and PowerShell (which it wants)
+# and then rustc, cargo, rustfmt, clippy, etc.  With this you can use cycod
+# and develop/test Rust (C# and PowerShell due to it being here for cycod)
+# (Rust happens to also include c/c++ tools too)
+
+# If set to true, we try to clean up any temp items and build directories
+# such that the image is smaller.
+ARG CLEANUP=true
+
+RUN <<INSTALL
+    echo "rust install"
+    set -e
+    set -x
+    tdnf -y install rust
 
     [ "${CLEANUP}" != "true" ] || tdnf clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*

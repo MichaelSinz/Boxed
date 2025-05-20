@@ -33,12 +33,10 @@ RUN <<INSTALL
         lsb-release
     curl -L https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb
     dpkg -i /tmp/packages-microsoft-prod.deb
-    rm /tmp/packages-microsoft-prod.deb
 
     # Now install:
     #     dotnet (required)
     #     git (required to build from git and to make local git commits)
-    #     powershell (useful)
     #     rsync (required when building from source)
     apt-get -qq update
     apt-get install -y \
@@ -46,8 +44,13 @@ RUN <<INSTALL
         gdb \
         git \
         make \
-        powershell \
         rsync
+
+    # Powershell is useful as cycod likes to use it from time to time.
+    # Unfortunately, Powershell seems to be only available for the x86_64
+    # platform in the debian repo.  This means that if we are not x86_64
+    # architecture we need to not try to install powershell as that will fail.
+    [ "$(arch)" != "x86_64" ] || apt-get install -y powershell
 
     # This is where we default mount our work - just have it ready for use
     # We really should make some way to do this a bit more "controlled"

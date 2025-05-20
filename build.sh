@@ -75,7 +75,7 @@ ARGS_AND_DEFAULTS=(
    # when it builds your container.  On the Mac, you can
    # have two different platforms:
    #    linux/amd64 - AMD/Intel x86-64 CPU
-   #    linux/arm64 - Apple Silicon (!!! Powershell fails)
+   #    linux/arm64 - ARM/Apple Silicon (No Powershell)
    platform=linux/amd64
 
    # This is the Dockerfile to use

@@ -90,6 +90,8 @@ tools plus git, curl, make, and Powershell (which the AI agent likes to use)
 More variants are bound to be added and sizes are variable based on platform
 and updates to those tools over time.
 
+>**NOTE:**  Powershell is currently only available on x86_64 platforms
+
 ### Selecting a Variant
 
 To see what variants are available, run:

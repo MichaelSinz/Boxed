@@ -45,7 +45,7 @@ ARGS_AND_DEFAULTS=(
    # when it runs your container.  On the Mac, you can
    # have two different platforms:
    #    linux/amd64 - Intel CPU x86-64
-   #    linux/arm64 - Apple Silicon (!!! Powershell fails)
+   #    linux/arm64 - ARM/Apple Silicon
    platform=linux/amd64
 
    # This is the directory where cycod will

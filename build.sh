@@ -106,6 +106,10 @@ if true; then
       echo >&2 ERROR: "$@"
    }
 
+   # We compute max arg length this here while checking for defaults.
+   # We start at 4 as "help" is 4 characters and we always support help.
+   ARGS_AND_DEFAULTS_MAX_LEN=4
+
    # Set all of the defaults but only if the variable is not already set
    # This way a user can override the defaults by setting them in their environment
    for default in ${ARGS_AND_DEFAULTS[@]}; do
@@ -115,6 +119,7 @@ if true; then
          _error "Parameter '$key' should start with a letter and only contain letters, numbers, and underscores"
          exit 1
       fi
+      [[ ${#key} -le ${ARGS_AND_DEFAULTS_MAX_LEN} ]] || ARGS_AND_DEFAULTS_MAX_LEN=${#key}
       [[ -n ${!key} ]] || declare ${default}
    done
 
@@ -123,11 +128,14 @@ if true; then
       # the script comments for each of the defaults.  A fun way to
       # get the comments to also be the detailed help text.  Thus they
       # are declarative and directly related to the code.
+      local arg_indent="    "
+      ARGS_AND_DEFAULTS_MAX_LEN=$(( ARGS_AND_DEFAULTS_MAX_LEN + 2 ))
       if [[ ${1} == --help ]] && [[ -f ${BASH_SOURCE} ]]; then
-         help_text=""
+         local help_text=""
+         local left_blank=$(printf "${arg_indent}%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} "")
          in_help=0
          while read -r line; do
-            if [[ ${line} == *"ARGS_AND_DEFAULTS=("* ]]; then
+            if [[ ${line} == "ARGS_AND_DEFAULTS=("* ]]; then
                in_help=1
             elif [[ ${line} == ")" ]]; then
                break
@@ -136,12 +144,12 @@ if true; then
                line="${line#"${line%%[![:space:]]*}"}"
                if [[ ${line} == "# "* ]]; then
                   # The comments are the extended help text
-                  help_text+=" ${line}\n"
+                  help_text+="${left_blank} ${line###}\n"
                elif [[ ${line} == *"="* ]]; then
                   argument="${line/=*}"
                   # If the script's default is different show it:
-                  [[ ${!argument} == ${line/*=} ]] || help_text=" # original: ${line/*=}\n${help_text}"
-                  declare "_help_${argument}"="${help_text} #------------------------------------------------------\n"
+                  [[ ${!argument} == ${line/*=} ]] || help_text="${left_blank}  original: ${line/*=}\n${help_text}"
+                  declare "_help_${argument}"="${help_text}${left_blank} ------------------------------------------------------"
                   help_text=""
                fi
             fi
@@ -154,22 +162,25 @@ if true; then
          echo "Usage: ${BASH_SOURCE} [--<override> value] [--help|-h]"
       fi
       {
-         local arg_indent="       "
          for var in ${ARGS_AND_DEFAULTS[@]}; do
             key=${var/=*}
-            echo "${arg_indent}--${key//_/-}# default: ${!key}"
+            printf "${arg_indent}--%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} "${key//_/-}"
+            echo "default: ${!key}"
             long_help="_help_${key}"
-            echo -e "${!long_help}"
+            [[ ! -n ${!long_help} ]] || echo -e "${!long_help}"
          done
          if [[ ${EXTRA_ARGS} == true ]]; then
-            echo "${arg_indent}-- # pass remaining arguments"
+            printf "${arg_indent}--%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} ""
+            echo "pass remaining arguments"
          fi
          if [[ -n ${!long_help} ]]; then
-            echo "${arg_indent}-h # for quick argument summary"
+            printf "${arg_indent}-%-*s " ${ARGS_AND_DEFAULTS_MAX_LEN} "h"
+            echo "for quick argument summary"
          else
-            echo "${arg_indent}--help # for more complete help"
+            printf "${arg_indent}--%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} "help"
+            echo "for more complete help"
          fi
-      } | column -t -s $'#'
+      }
    }
 
    # Now, process the command line arguments - This way we can override the

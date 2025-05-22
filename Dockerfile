@@ -40,11 +40,14 @@ RUN <<INSTALL
     #     rsync (required when building from source)
     apt-get -qq update
     apt-get install -y \
+        bash \
+        bsdextrautils \
         dotnet-sdk-8.0 \
         gdb \
         git \
         make \
-        rsync
+        rsync \
+        zsh
 
     # Powershell is useful as cycod likes to use it from time to time.
     # Unfortunately, Powershell seems to be only available for the x86_64

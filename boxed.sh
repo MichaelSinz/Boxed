@@ -86,19 +86,25 @@ ARGS_AND_DEFAULTS=(
 # ARGUMENT PARSER
 #
 # Data driven argument parser - Using bash trickery...
-# This "if" is here just so we can fold
+# This "if" is here just so we can fold it away in many editors
 if true; then
+   # Note that this argument parser is designed to be used in a script
+   # directly such that the script is fully self-contained.
+   # Also, by using the structure seen in this file, the ArguBASH-completion
+   # definition can be sourced into your bash environment to provide tab
+   # completion for the arguments defined by this parser.
+
    function _error() {
       echo >&2 ERROR: "$@"
    }
 
-   # We compute max arg length this here while checking for defaults.
+   # We compute max arg length here while checking for defaults.
    # We start at 4 as "help" is 4 characters and we always support help.
    ARGS_AND_DEFAULTS_MAX_LEN=4
 
    # Set all of the defaults but only if the variable is not already set
    # This way a user can override the defaults by setting them in their environment
-   for default in ${ARGS_AND_DEFAULTS[@]}; do
+   for default in "${ARGS_AND_DEFAULTS[@]}"; do
       key=${default/=*}
       # Validate that the key is a valid variable name - if not, error with details
       if [[ ! $key =~ ^[a-zA-Z][a-zA-Z0-9_]*$ ]]; then
@@ -119,7 +125,7 @@ if true; then
       if [[ ${1} == --help ]] && [[ -f ${BASH_SOURCE} ]]; then
          local help_text=""
          local left_blank=$(printf "${arg_indent}%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} "")
-         in_help=0
+         local in_help=0
          while read -r line; do
             if [[ ${line} == "ARGS_AND_DEFAULTS=("* ]]; then
                in_help=1
@@ -148,7 +154,7 @@ if true; then
          echo "Usage: ${BASH_SOURCE} [--<override> value] [--help|-h]"
       fi
       {
-         for var in ${ARGS_AND_DEFAULTS[@]}; do
+         for var in "${ARGS_AND_DEFAULTS[@]}"; do
             key=${var/=*}
             printf "${arg_indent}--%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} "${key//_/-}"
             echo "default: ${!key}"
@@ -174,7 +180,7 @@ if true; then
    while [[ $# -gt 0 ]]; do
       arg="${1}"
       shift 1
-      # Help is a spacial case
+      # Help is a special case
       if [[ ${arg} == --help || ${arg} == -h ]]; then
          show_help ${arg}
          exit 0
@@ -186,7 +192,7 @@ if true; then
          break
       elif [[ ${arg} == --* ]] || [[ ! ${EXTRA_ARGS} == true ]]; then
          valid=false
-         for var in ${ARGS_AND_DEFAULTS[@]}; do
+         for var in "${ARGS_AND_DEFAULTS[@]}"; do
             key=${var/=*}
             if [[ ${arg} == --${key//_/-} ]]; then
                # if there is no additional argument or it looks like a flag
@@ -215,7 +221,7 @@ if true; then
    done
 
    # Unset any that are blank (trick used later)
-   for var in ${ARGS_AND_DEFAULTS[@]}; do
+   for var in "${ARGS_AND_DEFAULTS[@]}"; do
       key=${var/=*}
       [[ -n ${!key} ]] || unset ${key}
    done
@@ -226,9 +232,9 @@ if true; then
    # The trick to get the command line arguments to be printed with whatever
    # escaping needed to get them to turn out correctly for the shell is to
    # let the shell log it for us and we just clean it up.
-   [[ ${verbosity} -gt 1 ]] && echo >&2 -e "\nRunning with these effective options:\n\n$(
+   [[ ${verbosity-0} -lt 2 ]] || echo >&2 -e "\nRunning with these effective options:\n\n$(
          declare -a effective_cmd_args=("${BASH_SOURCE}")
-         for var in ${ARGS_AND_DEFAULTS[@]}; do
+         for var in "${ARGS_AND_DEFAULTS[@]}"; do
             key=${var/=*}
             effective_cmd_args+=("--${key//_/-}" "${!key}")
          done

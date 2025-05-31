@@ -398,3 +398,5 @@ really like the way the Rust clap crate does this and the Swift
 This approach makes the scripts highly maintainable and extensible, as all
 arguments are defined in a single place with their defaults and documentation,
 similar to modern CLI frameworks in higher-level languages.
+
+See more about this in my [ArguBASH](https://github.com/MichaelSinz/ArguBash) GitHub project.

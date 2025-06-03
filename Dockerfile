@@ -45,8 +45,11 @@ RUN <<INSTALL
         dotnet-sdk-8.0 \
         gdb \
         git \
+        jq \
+        less \
         make \
         rsync \
+        vim \
         zsh
 
     # Powershell is useful as cycod likes to use it from time to time.

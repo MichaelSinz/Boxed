@@ -42,9 +42,13 @@ RUN <<INSTALL
         curl \
         gdb \
         git \
+        jq \
+        less \
         make \
         powershell \
-        rsync
+        rsync \
+        vim \
+        zsh
 
     # This is where we default mount our work - just have it ready for use
     # We really should make some way to do this a bit more "controlled"

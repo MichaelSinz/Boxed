@@ -10,6 +10,11 @@
 # handled via the declarative argument parser I have written
 # for bash scripts.
 #
+# We define this to get the default cpu type for the
+# platform argument.  I did not want to in-line this into
+# the default itself so I made a local function that it uses.
+_ARCH() { [[ ${HOSTTYPE:-$(uname -m)} =~ arm64|aarch64|armv8|arm.*64 ]] && echo 'arm64' || echo 'amd64'; }
+#
 #################################################################
 # ARGUMENT DEFINITION
 #
@@ -71,12 +76,12 @@ ARGS_AND_DEFAULTS=(
    # such that this works
    push=false
 
-   # This provides the plaform that Docker should be using
-   # when it builds your container.  On the Mac, you can
-   # have two different platforms:
-   #    linux/amd64 - AMD/Intel x86-64 CPU
-   #    linux/arm64 - ARM/Apple Silicon (No Powershell)
-   platform=linux/amd64
+   # This provides the platform that Docker should be using
+   # when it builds your container. The default is set to
+   # the CPU architecture detected:
+   #    linux/arm64 - If running on ARM64/Apple Silicon
+   #    linux/amd64 - If running on x86-64/Intel or others
+   platform=linux/$(_ARCH)
 
    # This is the Dockerfile to use
    dockerfile=$(cd "$(dirname "${BASH_SOURCE}")"; pwd)/Dockerfile

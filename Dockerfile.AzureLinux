@@ -14,7 +14,7 @@
 # This is the official Microsoft image for dotnet and Azure Linux 3.0
 
 ############ Base toolset install #############################################
-FROM mcr.microsoft.com/dotnet/sdk:8.0-azurelinux3.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0-azurelinux3.0 AS base-az
 # This starts with dotnet SDK already set up.
 # Note that this is basically a C-Sharp environment so we will be able to
 # use it as such too.  We also include git & rsync such that we can build CycoD
@@ -40,6 +40,7 @@ RUN <<INSTALL
     # Install required packages for dotnet and our base feature set
     tdnf -y install \
         curl \
+        file \
         gdb \
         git \
         jq \
@@ -124,12 +125,12 @@ BUILD
 
 
 ############ c-sharp #############################################
-FROM base AS c-sharp
+FROM base-az AS c-sharp-az
 # Not much to do here other than being here...
 
 
 ############ c-cpp #############################################
-FROM base AS c-cpp
+FROM base-az AS c-cpp-az
 # This is effectively an example C/C++ boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then gcc, g++, gdb, make, cmake, etc.  With this you can use cycod
@@ -151,7 +152,7 @@ INSTALL
 
 
 ############ rust ################################
-FROM c-cpp AS rust
+FROM c-cpp-az AS rust-az
 # This is effectively an example Rust boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then rustc, cargo, rustfmt, clippy, etc.  With this you can use cycod
@@ -174,7 +175,7 @@ INSTALL
 
 
 ############ nodejs #############################################
-FROM base AS nodejs
+FROM base-az AS nodejs-az
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.
 ARG CLEANUP=true
@@ -193,7 +194,7 @@ INSTALL
 
 
 ############ typescript #############################################
-FROM nodejs AS typescript
+FROM nodejs-az AS typescript-az
 # If set to true, we try to clean up any temp items and build directories
 # such that the image is smaller.
 ARG CLEANUP=true
@@ -209,7 +210,7 @@ INSTALL_TYPESCRIPT
 
 
 ############ java #############################################
-FROM base AS java
+FROM base-az AS java-az
 # This is effectively an example Java boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then the Java SDK (and make).  With this you can use cycod
@@ -232,7 +233,7 @@ INSTALL
 
 
 ############ python #############################################
-FROM base AS python
+FROM base-az AS python-az
 # This is effectively an example Python boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then Python3 and pip (and make).  With this you can use cycod
@@ -256,7 +257,7 @@ INSTALL
 
 
 ############ go #############################################
-FROM base AS go
+FROM base-az AS go-az
 # This is effectively an example Go boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then the Go sdk.  With this you can use cycod
@@ -279,7 +280,7 @@ INSTALL
 
 
 ############ ruby #############################################
-FROM base AS ruby
+FROM base-az AS ruby-az
 # This is effectively an example Ruby boxed container for cycod
 # It has dotnet (which cycod needs) and PowerShell (which it wants)
 # and then Ruby.  With this you can use cycod
@@ -302,7 +303,7 @@ INSTALL
 
 
 ############ large #############################################
-FROM typescript AS large
+FROM typescript-az AS large-az
 # This is the "large" Docker image for AI coding agent - it has many languages
 # installed starting with the C# needd for the CycoD tools but then
 # adding: C, C++, Rust, Java, golang, JavaScipt (nodejs), TypeScript, Perl,
@@ -329,7 +330,6 @@ RUN <<INSTALL
     set -x
     tdnf -y install \
         cmake \
-        file \
         gcc \
         gcc-c++ \
         golang \

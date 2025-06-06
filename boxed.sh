@@ -15,6 +15,11 @@
 # handled via the declarative argument parser I have written
 # for bash scripts.
 #
+# We define this to get the default cpu type for the
+# platform argument.  I did not want to in-line this into
+# the default itself so I made a local function that it uses.
+_ARCH() { [[ ${HOSTTYPE:-$(uname -m)} =~ arm64|aarch64|armv8|arm.*64 ]] && echo 'arm64' || echo 'amd64'; }
+#
 #################################################################
 # ARGUMENT DEFINITION
 #
@@ -41,12 +46,12 @@ ARGS_AND_DEFAULTS=(
    # what we build - the tag will be the variant
    boxed_image=boxed
 
-   # This provides the plaform that Docker should be using
-   # when it runs your container.  On the Mac, you can
-   # have two different platforms:
-   #    linux/amd64 - Intel CPU x86-64
-   #    linux/arm64 - ARM/Apple Silicon
-   platform=linux/amd64
+   # This provides the platform that Docker should be using
+   # when it pulls/runs the container. The default is set
+   # to the CPU architecture detected:
+   #    linux/arm64 - If running on ARM64/Apple Silicon
+   #    linux/amd64 - If running on x86-64/Intel or others
+   platform=linux/$(_ARCH)
 
    # This is the directory where cycod will
    # store its token, history, etc

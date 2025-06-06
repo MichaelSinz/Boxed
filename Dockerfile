@@ -43,6 +43,7 @@ RUN <<INSTALL
         bash \
         bsdextrautils \
         dotnet-sdk-8.0 \
+        file \
         gdb \
         git \
         jq \
@@ -154,6 +155,7 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         cmake \
+        doxygen \
         g++ \
         gcc
 
@@ -354,7 +356,7 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         cmake \
-        file \
+        doxygen \
         g++ \
         gcc \
         golang \

@@ -175,6 +175,29 @@ export variant=c-sharp
 Then both [build.sh](build.sh) and [boxed.sh](boxed.sh) will use that value as
 its default.
 
+### Platform Auto-Detection
+
+Both `build.sh` and `boxed.sh` now automatically detect some CPU architectures and sets the appropriate platform default:
+
+- On ARM64 machines (including Apple Silicon): Defaults to `linux/arm64`
+- On x86-64 machines (Intel/AMD) or any unrecognized architecture: Defaults to `linux/amd64`
+
+This auto-detection improves performance by selecting the native architecture for your system, but you can still override it with the `--platform` option or the `platform` environment variable:
+
+```bash
+# Force using AMD64 architecture even on ARM machines
+./build.sh --platform linux/amd64
+./boxed.sh --platform linux/amd64
+```
+or
+```bash
+# Force using AMD64 architecture even on ARM machines
+export platform=linux/amd64
+./build.sh
+./boxed.sh
+```
+
+
 ### Building Options
 
 The build script offers several important options to customize your container:

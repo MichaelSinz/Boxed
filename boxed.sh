@@ -70,6 +70,11 @@ ARGS_AND_DEFAULTS=(
    # Name of the running container
    boxed_name=boxed-$$
 
+   # The network to use in Docker for the box.
+   # The default is normally perfect but if you
+   # need host network, set it to host.
+   boxed_network=default
+
    # This is the user's gitconfig file
    # Can be replaced with a different file
    # if you want to have a specific one for
@@ -315,6 +320,7 @@ exec docker run \
    --tty \
    --name "${boxed_name}" \
    --hostname "${boxed_name}" \
+   --network "${boxed_network}" \
    --workdir "${boxed_home}/src" \
    --user ${_user_id}:${_user_group} \
    --env "USER=${_user_name}" \

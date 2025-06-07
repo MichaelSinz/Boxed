@@ -267,6 +267,18 @@ By default, the container has the same network access as your host machine.
 This allows CycoD to access external resources like package repositories and
 documentation.
 
+You can customize the network configuration using the `--boxed-network` option:
+
+```bash
+# Use the host network directly (useful when needing to communicate with localhost)
+boxed --boxed-network host
+```
+
+```bash
+# Use a custom Docker network you've created
+boxed --boxed-network my-custom-network
+```
+
 Restricting network access is a bit more complicated as the AI agent needs
 the network to get access to the AI services.  Thus this is left for future
 work.

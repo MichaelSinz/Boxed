@@ -93,6 +93,7 @@ ARG CYCOD_HASH=any
 RUN --mount=type=bind,source=./,target=/source/ \
     <<BUILD
     mkdir -m 755 -p ${AI_TOOL_BIN}
+    set -e
     case "${CYCOD_FROM}" in
         "package")
             echo 'Installing from package ...'
@@ -126,7 +127,7 @@ RUN --mount=type=bind,source=./,target=/source/ \
     esac
     [ "${CLEANUP}" != "true" ] || rm -rf /build /root/.dotnet /root/.nuget /root/.local /tmp/* /tmp/.dotnet
     chmod -R a-w,a+r ${AI_TOOL_BIN}
-    cycodt --version
+    cycod --version
 BUILD
 
 ############ Base toolset install =============================================

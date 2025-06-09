@@ -35,6 +35,12 @@ ARGS_AND_DEFAULTS=(
    # of the available variants in the Dockerfile
    variant=large
 
+   # A suffix to add to the variant tag for the image.
+   # Useful when wishing to have the same Dockerfile
+   # produce different variants due to, for example,
+   # the changed git branch or hash to build from.
+   variant_suffix=""
+
    # This is the docker image name to use for
    # what we build - the tag will be the variant
    boxed_image=boxed
@@ -309,7 +315,7 @@ for variant in $variants; do
       ${platform+--platform ${platform}} \
       --target ${variant} \
       --file "${dockerfile}" \
-      --tag ${boxed_image}:${variant} \
+      --tag ${boxed_image}:${variant}${variant_suffix} \
       "${cycod_source}" || exit 1
    [[ ${push} == 'true' ]] && docker push ${boxed_image}:${variant}
 done

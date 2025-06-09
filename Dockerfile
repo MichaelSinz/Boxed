@@ -30,19 +30,21 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         curl \
-        lsb-release
+        lsb-release \
+        software-properties-common
     curl -L https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb
     dpkg -i /tmp/packages-microsoft-prod.deb
+    add-apt-repository ppa:dotnet/backports
 
     # Now install:
-    #     dotnet (required)
+    #     dotnet sdk 9.0 (required)
     #     git (required to build from git and to make local git commits)
     #     rsync (required when building from source)
     apt-get -qq update
     apt-get install -y \
         bash \
         bsdextrautils \
-        dotnet-sdk-8.0 \
+        dotnet-sdk-9.0 \
         file \
         gdb \
         git \

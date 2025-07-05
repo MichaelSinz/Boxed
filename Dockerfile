@@ -194,7 +194,7 @@ RUN <<INSTALL_RUST
     cd /root
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /root/rust-install.sh
     chmod +x /root/rust-install.sh
-    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt
+    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt,llvm-tools-preview
     [ "${CLEANUP}" != "true" ] || rm /root/rust-install.sh
 INSTALL_RUST
 

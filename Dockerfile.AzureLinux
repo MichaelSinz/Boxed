@@ -42,6 +42,7 @@ RUN <<INSTALL
         curl \
         file \
         gdb \
+        gh \
         git \
         jq \
         less \

@@ -39,6 +39,7 @@ RUN <<INSTALL
     # Now install:
     #     dotnet sdk 9.0 (required)
     #     git (required to build from git and to make local git commits)
+    #     github (gh) (Just in case we need gh access)
     #     rsync (required when building from source)
     apt-get -qq update
     apt-get install -y \
@@ -47,6 +48,7 @@ RUN <<INSTALL
         dotnet-sdk-9.0 \
         file \
         gdb \
+        gh \
         git \
         jq \
         less \
@@ -277,6 +279,7 @@ RUN <<INSTALL
         pip \
         python3
 
+    [ -f /usr/bin/python ] || ln -s /usr/bin/python3 /usr/bin/python
     [ "${CLEANUP}" != "true" ] || apt-get clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
 INSTALL
@@ -372,6 +375,7 @@ RUN <<INSTALL
         ruby-full \
         vim
 
+    [ -f /usr/bin/python ] || ln -s /usr/bin/python3 /usr/bin/python
     [ "${CLEANUP}" != "true" ] || apt-get clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
 INSTALL

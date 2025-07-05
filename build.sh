@@ -224,7 +224,7 @@ if true; then
                # then it is invalid - this does mean you can't have a value
                # that starts with a dash "-" but for what we use, that is fine.
                # This catches typos or mistakes in the command line options.
-               if [[ $# -lt 1 || ${1} == -* ]]; then
+               if [[ $# -lt 1 || ${1} == --* ]]; then
                   _error "Argument '${arg}' requires a value"
                   exit 1
                fi

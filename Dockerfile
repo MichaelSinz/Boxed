@@ -277,7 +277,8 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         pip \
-        python3
+        python3 \
+        python3-venv
 
     [ -f /usr/bin/python ] || ln -s /usr/bin/python3 /usr/bin/python
     [ "${CLEANUP}" != "true" ] || apt-get clean all
@@ -372,6 +373,7 @@ RUN <<INSTALL
         openjdk-21-jdk \
         pip \
         python3 \
+        python3-venv \
         ruby-full \
         vim
 

@@ -175,6 +175,29 @@ export variant=c-sharp
 Then both [build.sh](build.sh) and [boxed.sh](boxed.sh) will use that value as
 its default.
 
+### Platform Auto-Detection
+
+Both `build.sh` and `boxed.sh` now automatically detect some CPU architectures and sets the appropriate platform default:
+
+- On ARM64 machines (including Apple Silicon): Defaults to `linux/arm64`
+- On x86-64 machines (Intel/AMD) or any unrecognized architecture: Defaults to `linux/amd64`
+
+This auto-detection improves performance by selecting the native architecture for your system, but you can still override it with the `--platform` option or the `platform` environment variable:
+
+```bash
+# Force using AMD64 architecture even on ARM machines
+./build.sh --platform linux/amd64
+./boxed.sh --platform linux/amd64
+```
+or
+```bash
+# Force using AMD64 architecture even on ARM machines
+export platform=linux/amd64
+./build.sh
+./boxed.sh
+```
+
+
 ### Building Options
 
 The build script offers several important options to customize your container:
@@ -243,6 +266,18 @@ This will start the container, run the specified command, and exit.
 By default, the container has the same network access as your host machine.
 This allows CycoD to access external resources like package repositories and
 documentation.
+
+You can customize the network configuration using the `--boxed-network` option:
+
+```bash
+# Use the host network directly (useful when needing to communicate with localhost)
+boxed --boxed-network host
+```
+
+```bash
+# Use a custom Docker network you've created
+boxed --boxed-network my-custom-network
+```
 
 Restricting network access is a bit more complicated as the AI agent needs
 the network to get access to the AI services.  Thus this is left for future
@@ -398,3 +433,5 @@ really like the way the Rust clap crate does this and the Swift
 This approach makes the scripts highly maintainable and extensible, as all
 arguments are defined in a single place with their defaults and documentation,
 similar to modern CLI frameworks in higher-level languages.
+
+See more about this in my [ArguBASH](https://github.com/MichaelSinz/ArguBash) GitHub project.

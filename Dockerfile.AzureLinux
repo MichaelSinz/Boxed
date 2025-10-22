@@ -5,7 +5,7 @@
 # What this allows is for us to good build caching of common parts and also
 # have reasonably good decomposition of the larger bits.
 #
-# NOTE - This version is based on Azure Linux 3.0 with the dotnet SDK 8.0
+# NOTE - This version is based on Azure Linux 3.0 with the dotnet SDK 9.0
 # already installed.  Now, Azure Linux is based on RPM and not DPKG/APT
 # so it works a bit differently.  This is mainly here to show another
 # example and for those who would rather build their own dev images.
@@ -14,7 +14,7 @@
 # This is the official Microsoft image for dotnet and Azure Linux 3.0
 
 ############ Base toolset install #############################################
-FROM mcr.microsoft.com/dotnet/sdk:8.0-azurelinux3.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:9.0-azurelinux3.0 AS base
 # This starts with dotnet SDK already set up.
 # Note that this is basically a C-Sharp environment so we will be able to
 # use it as such too.  We also include git & rsync such that we can build CycoD
@@ -40,11 +40,17 @@ RUN <<INSTALL
     # Install required packages for dotnet and our base feature set
     tdnf -y install \
         curl \
+        file \
         gdb \
+        gh \
         git \
+        jq \
+        less \
         make \
         powershell \
-        rsync
+        rsync \
+        vim \
+        zsh
 
     # This is where we default mount our work - just have it ready for use
     # We really should make some way to do this a bit more "controlled"
@@ -244,7 +250,8 @@ RUN <<INSTALL
     set -x
     tdnf -y install \
         python3 \
-        python3-pip
+        python3-pip \
+        python3-virtualenv
 
     [ "${CLEANUP}" != "true" ] || tdnf clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/log/* /var/cache/* /tmp/*
@@ -325,7 +332,6 @@ RUN <<INSTALL
     set -x
     tdnf -y install \
         cmake \
-        file \
         gcc \
         gcc-c++ \
         golang \
@@ -333,6 +339,7 @@ RUN <<INSTALL
         java-21-openjdk-devel \
         python3 \
         python3-pip \
+        python3-virtualenv \
         ruby \
         rust \
         vim

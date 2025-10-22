@@ -10,6 +10,11 @@
 # handled via the declarative argument parser I have written
 # for bash scripts.
 #
+# We define this to get the default cpu type for the
+# platform argument.  I did not want to in-line this into
+# the default itself so I made a local function that it uses.
+_ARCH() { [[ ${HOSTTYPE:-$(uname -m)} =~ arm64|aarch64|armv8|arm.*64 ]] && echo 'arm64' || echo 'amd64'; }
+#
 #################################################################
 # ARGUMENT DEFINITION
 #
@@ -29,6 +34,12 @@ ARGS_AND_DEFAULTS=(
    # Special 'ALL' variant for build will build all
    # of the available variants in the Dockerfile
    variant=large
+
+   # A suffix to add to the variant tag for the image.
+   # Useful when wishing to have the same Dockerfile
+   # produce different variants due to, for example,
+   # the changed git branch or hash to build from.
+   variant_suffix=""
 
    # This is the docker image name to use for
    # what we build - the tag will be the variant
@@ -71,12 +82,12 @@ ARGS_AND_DEFAULTS=(
    # such that this works
    push=false
 
-   # This provides the plaform that Docker should be using
-   # when it builds your container.  On the Mac, you can
-   # have two different platforms:
-   #    linux/amd64 - AMD/Intel x86-64 CPU
-   #    linux/arm64 - ARM/Apple Silicon (No Powershell)
-   platform=linux/amd64
+   # This provides the platform that Docker should be using
+   # when it builds your container. The default is set to
+   # the CPU architecture detected:
+   #    linux/arm64 - If running on ARM64/Apple Silicon
+   #    linux/amd64 - If running on x86-64/Intel or others
+   platform=linux/$(_ARCH)
 
    # This is the Dockerfile to use
    dockerfile=$(cd "$(dirname "${BASH_SOURCE}")"; pwd)/Dockerfile
@@ -119,14 +130,14 @@ if true; then
    # Set all of the defaults but only if the variable is not already set
    # This way a user can override the defaults by setting them in their environment
    for default in "${ARGS_AND_DEFAULTS[@]}"; do
-      key=${default/=*}
+      key=${default%=*}
       # Validate that the key is a valid variable name - if not, error with details
       if [[ ! $key =~ ^[a-zA-Z][a-zA-Z0-9_]*$ ]]; then
          _error "Parameter '$key' should start with a letter and only contain letters, numbers, and underscores"
          exit 1
       fi
       [[ ${#key} -le ${ARGS_AND_DEFAULTS_MAX_LEN} ]] || ARGS_AND_DEFAULTS_MAX_LEN=${#key}
-      [[ -n ${!key} ]] || declare ${default}
+      [[ -n ${!key} ]] || declare ${key}="${default#*=}"
    done
 
    function show_help() {
@@ -152,9 +163,9 @@ if true; then
                   # The comments are the extended help text
                   help_text+="${left_blank} ${line###}\n"
                elif [[ ${line} == *"="* ]]; then
-                  argument="${line/=*}"
+                  argument="${line%=*}"
                   # If the script's default is different show it:
-                  [[ ${!argument} == ${line/*=} ]] || help_text="${left_blank}  original: ${line/*=}\n${help_text}"
+                  [[ ${!argument} == ${line#*=} ]] || help_text="${left_blank}  original: ${line#*=}\n${help_text}"
                   declare "_help_${argument}"="${help_text}${left_blank} ------------------------------------------------------"
                   help_text=""
                fi
@@ -169,7 +180,7 @@ if true; then
       fi
       {
          for var in "${ARGS_AND_DEFAULTS[@]}"; do
-            key=${var/=*}
+            key=${var%=*}
             printf "${arg_indent}--%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} "${key//_/-}"
             echo "default: ${!key}"
             long_help="_help_${key}"
@@ -207,13 +218,13 @@ if true; then
       elif [[ ${arg} == --* ]] || [[ ! ${EXTRA_ARGS} == true ]]; then
          valid=false
          for var in "${ARGS_AND_DEFAULTS[@]}"; do
-            key=${var/=*}
+            key=${var%=*}
             if [[ ${arg} == --${key//_/-} ]]; then
                # if there is no additional argument or it looks like a flag
                # then it is invalid - this does mean you can't have a value
                # that starts with a dash "-" but for what we use, that is fine.
                # This catches typos or mistakes in the command line options.
-               if [[ $# -lt 1 || ${1} == -* ]]; then
+               if [[ $# -lt 1 || ${1} == --* ]]; then
                   _error "Argument '${arg}' requires a value"
                   exit 1
                fi
@@ -236,7 +247,7 @@ if true; then
 
    # Unset any that are blank (trick used later)
    for var in "${ARGS_AND_DEFAULTS[@]}"; do
-      key=${var/=*}
+      key=${var%=*}
       [[ -n ${!key} ]] || unset ${key}
    done
 
@@ -246,16 +257,17 @@ if true; then
    # The trick to get the command line arguments to be printed with whatever
    # escaping needed to get them to turn out correctly for the shell is to
    # let the shell log it for us and we just clean it up.
-   [[ ${verbosity-0} -lt 2 ]] || echo >&2 -e "\nRunning with these effective options:\n\n$(
-         declare -a effective_cmd_args=("${BASH_SOURCE}")
-         for var in "${ARGS_AND_DEFAULTS[@]}"; do
-            key=${var/=*}
-            effective_cmd_args+=("--${key//_/-}" "${!key}")
-         done
-         [[ ${#extra_args} -lt 1 ]] || effective_cmd_args+=("--" "${extra_args[@]}")
-         effective_cmd_line=$( (set -x; : "${effective_cmd_args[@]}") 2>&1 )
-         echo "${effective_cmd_line/*+ : }"
-      )\n"
+   readonly RUNNING_WITH_OPTIONS=$(
+      declare -a effective_cmd_args=("${BASH_SOURCE}")
+      for var in "${ARGS_AND_DEFAULTS[@]}"; do
+         key=${var%=*}
+         effective_cmd_args+=("--${key//_/-}" "${!key}")
+      done
+      [[ ${#extra_args} -lt 1 ]] || effective_cmd_args+=("--" "${extra_args[@]}")
+      effective_cmd_line=$( (set -x; : "${effective_cmd_args[@]}") 2>&1 )
+      echo "${effective_cmd_line/*+ : }"
+   )
+   [[ ${verbosity-0} -lt 2 ]] || echo >&2 -e "\nRunning with these effective options:\n\n${RUNNING_WITH_OPTIONS}\n"
 fi
 # END of ARGUMENT PARSER
 ##################################################################
@@ -304,7 +316,7 @@ for variant in $variants; do
       ${platform+--platform ${platform}} \
       --target ${variant} \
       --file "${dockerfile}" \
-      --tag ${boxed_image}:${variant} \
+      --tag ${boxed_image}:${variant}${variant_suffix} \
       "${cycod_source}" || exit 1
-   [[ ${push} == 'true' ]] && docker push ${boxed_image}:${variant}
+   [[ ${push} == 'true' ]] && docker push ${boxed_image}:${variant}${variant_suffix}
 done

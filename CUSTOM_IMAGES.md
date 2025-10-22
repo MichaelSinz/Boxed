@@ -170,7 +170,7 @@ variant, follow these essential guidelines:
    # Install required packages
    RUN apt-get -qq update && \
        apt-get install -y \
-           dotnet-sdk-8.0 \
+           dotnet-sdk-9.0 \
            gdb \
            git \
            make \
@@ -248,7 +248,7 @@ RUN <<INSTALL
 
     apt-get -qq update
     apt-get install -y \
-        dotnet-sdk-8.0 \
+        dotnet-sdk-9.0 \
         gdb \
         git \
         make \
@@ -348,7 +348,7 @@ RUN <<INSTALL_DOTNET
     rm packages-microsoft-prod.rpm
 
     # Install .NET SDK
-    dnf install -y dotnet-sdk-8.0
+    dnf install -y dotnet-sdk-9.0
 
     # Install PowerShell (optional but recommended for CycoD)
     dnf install -y https://github.com/PowerShell/PowerShell/releases/download/v7.4.1/powershell-7.4.1-1.rh.x86_64.rpm

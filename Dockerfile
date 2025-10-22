@@ -30,23 +30,31 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         curl \
-        lsb-release
+        lsb-release \
+        software-properties-common
     curl -L https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb
     dpkg -i /tmp/packages-microsoft-prod.deb
+    add-apt-repository ppa:dotnet/backports
 
     # Now install:
-    #     dotnet (required)
+    #     dotnet sdk 9.0 (required)
     #     git (required to build from git and to make local git commits)
+    #     github (gh) (Just in case we need gh access)
     #     rsync (required when building from source)
     apt-get -qq update
     apt-get install -y \
         bash \
         bsdextrautils \
-        dotnet-sdk-8.0 \
+        dotnet-sdk-9.0 \
+        file \
         gdb \
+        gh \
         git \
+        jq \
+        less \
         make \
         rsync \
+        vim \
         zsh
 
     # Powershell is useful as cycod likes to use it from time to time.
@@ -89,6 +97,7 @@ ARG CYCOD_HASH=any
 RUN --mount=type=bind,source=./,target=/source/ \
     <<BUILD
     mkdir -m 755 -p ${AI_TOOL_BIN}
+    set -e
     case "${CYCOD_FROM}" in
         "package")
             echo 'Installing from package ...'
@@ -122,7 +131,7 @@ RUN --mount=type=bind,source=./,target=/source/ \
     esac
     [ "${CLEANUP}" != "true" ] || rm -rf /build /root/.dotnet /root/.nuget /root/.local /tmp/* /tmp/.dotnet
     chmod -R a-w,a+r ${AI_TOOL_BIN}
-    cycodt --version
+    cycod --version
 BUILD
 
 ############ Base toolset install =============================================
@@ -151,6 +160,7 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         cmake \
+        doxygen \
         g++ \
         gcc
 
@@ -184,7 +194,7 @@ RUN <<INSTALL_RUST
     cd /root
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /root/rust-install.sh
     chmod +x /root/rust-install.sh
-    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt
+    CARGO_HOME=/usr/local/cargo /root/rust-install.sh -y --profile minimal --component cargo,clippy,rust-std,rustc,rustfmt,llvm-tools-preview
     [ "${CLEANUP}" != "true" ] || rm /root/rust-install.sh
 INSTALL_RUST
 
@@ -267,8 +277,10 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         pip \
-        python3
+        python3 \
+        python3-venv
 
+    [ -f /usr/bin/python ] || ln -s /usr/bin/python3 /usr/bin/python
     [ "${CLEANUP}" != "true" ] || apt-get clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
 INSTALL
@@ -351,7 +363,7 @@ RUN <<INSTALL
     apt-get -qq update
     apt-get install -y \
         cmake \
-        file \
+        doxygen \
         g++ \
         gcc \
         golang \
@@ -361,9 +373,11 @@ RUN <<INSTALL
         openjdk-21-jdk \
         pip \
         python3 \
+        python3-venv \
         ruby-full \
         vim
 
+    [ -f /usr/bin/python ] || ln -s /usr/bin/python3 /usr/bin/python
     [ "${CLEANUP}" != "true" ] || apt-get clean all
     [ "${CLEANUP}" != "true" ] || rm -rf /var/lib/apt/lists/* /var/log/* /var/cache/* /tmp/*
 INSTALL

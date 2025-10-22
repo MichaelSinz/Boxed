@@ -32,6 +32,9 @@ EXTRA_ARGS=true
 # This is a list of arguments that are not
 # tied to an option.  Useful if you want positionals.
 extra_args=()
+# Arrays to hold environment variables and volume mounts
+declare -a env_vars=()
+declare -a volume_mounts=()
 ARGS_AND_DEFAULTS=(
    # The directory you want to mount into
    # the boxed workspace to work on.
@@ -159,9 +162,9 @@ if true; then
       fi
 
       if [[ ${EXTRA_ARGS} == true ]]; then
-         echo "Usage: ${BASH_SOURCE} [--<override> value] [--help|-h] <positional args>"
+         echo "Usage: ${BASH_SOURCE} [--<override> value] [-e ENV=VALUE] [-v HOST_PATH:CONTAINER_PATH] [--help|-h] <positional args>"
       else
-         echo "Usage: ${BASH_SOURCE} [--<override> value] [--help|-h]"
+         echo "Usage: ${BASH_SOURCE} [--<override> value] [-e ENV=VALUE] [-v HOST_PATH:CONTAINER_PATH] [--help|-h]"
       fi
       {
          for var in "${ARGS_AND_DEFAULTS[@]}"; do
@@ -171,6 +174,8 @@ if true; then
             long_help="_help_${key}"
             [[ ! -n ${!long_help} ]] || echo -e "${!long_help}"
          done
+         echo "${arg_indent}-e, --env ENV=VALUE # set environment variable (can be used multiple times)"
+         echo "${arg_indent}-v, --volume HOST_PATH:CONTAINER_PATH # add volume mount (can be used multiple times)"
          if [[ ${EXTRA_ARGS} == true ]]; then
             printf "${arg_indent}--%-*s" ${ARGS_AND_DEFAULTS_MAX_LEN} ""
             echo "pass remaining arguments"
@@ -194,6 +199,26 @@ if true; then
       if [[ ${arg} == --help || ${arg} == -h ]]; then
          show_help ${arg}
          exit 0
+      fi
+      # Handle environment variables
+      if [[ ${arg} == --env || ${arg} == -e ]]; then
+         if [[ $# -lt 1 ]]; then
+            _error "Argument '${arg}' requires a value"
+            exit 1
+         fi
+         env_vars+=("--env" "${1}")
+         shift 1
+         continue
+      fi
+      # Handle volume mounts
+      if [[ ${arg} == --volume || ${arg} == -v ]]; then
+         if [[ $# -lt 1 ]]; then
+            _error "Argument '${arg}' requires a value"
+            exit 1
+         fi
+         volume_mounts+=("--volume" "${1}")
+         shift 1
+         continue
       fi
       if [[ ${arg} == -- ]] && [[ ${EXTRA_ARGS} == true ]]; then
          # This is a special case for when you want to pass
@@ -248,6 +273,15 @@ if true; then
          key=${var%=*}
          effective_cmd_args+=("--${key//_/-}" "${!key}")
       done
+      
+      # Add environment variables and volume mounts to the effective command
+      for ((i=0; i<${#env_vars[@]}; i+=2)); do
+         effective_cmd_args+=("${env_vars[i]}" "${env_vars[i+1]}")
+      done
+      for ((i=0; i<${#volume_mounts[@]}; i+=2)); do
+         effective_cmd_args+=("${volume_mounts[i]}" "${volume_mounts[i+1]}")
+      done
+
       [[ ${#extra_args} -lt 1 ]] || effective_cmd_args+=("--" "${extra_args[@]}")
       effective_cmd_line=$( (set -x; : "${effective_cmd_args[@]}") 2>&1 )
       echo "${effective_cmd_line/*+ : }"
@@ -313,6 +347,25 @@ GROUP
 # on Windows.
 export MSYS_NO_PATHCONV=1
 
+# Baseline environment variables
+base_env_args=(
+   "--env" "USER=${_user_name}"
+   "--env" "HOME=${boxed_home}"
+)
+
+# Baseline volume mounts
+base_volume_args=(
+   "--volume" "${misc_dir}/passwd:/etc/passwd:ro"
+   "--volume" "${misc_dir}/group:/etc/group:ro"
+   "--volume" "${cycod_dir}:${boxed_home}/.cycod"
+   "--volume" "${dir}:${boxed_home}/${boxed_work}"
+)
+
+# Add git config if provided
+if [[ -n "${git_config}" ]]; then
+   base_volume_args+=("--volume" "${git_config}:${boxed_home}/.gitconfig:ro")
+fi
+
 [[ ${verbosity} -gt 0 ]] && set -x
 exec docker run \
    --platform ${platform} \
@@ -324,12 +377,9 @@ exec docker run \
    --network "${boxed_network}" \
    --workdir "${boxed_home}/src" \
    --user ${_user_id}:${_user_group} \
-   --env "USER=${_user_name}" \
-   --env "HOME=${boxed_home}" \
-   --volume "${misc_dir}/passwd:/etc/passwd:ro" \
-   --volume "${misc_dir}/group:/etc/group:ro" \
-   --volume "${cycod_dir}:${boxed_home}/.cycod" \
-   ${git_config:+--volume "${git_config}:${boxed_home}/.gitconfig:ro"} \
-   --volume "${dir}:${boxed_home}/${boxed_work}" \
+   "${base_env_args[@]}" \
+   "${env_vars[@]}" \
+   "${base_volume_args[@]}" \
+   "${volume_mounts[@]}" \
    "${boxed_image}:${variant}" \
    "${extra_args[@]}"

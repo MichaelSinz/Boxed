@@ -88,6 +88,12 @@ ARGS_AND_DEFAULTS=(
    # 2 = log effective command line parameters
    # 3 = trace almost everything
    verbosity=1
+
+   # Whether to allocate a tty for the container
+   # This is normally desired for interactive use
+   # but may be set to false for non-interactive use
+   # such as in scripts.
+   tty=true
 )
 # END of ARGUMENT DEFINITION
 ##################################################################
@@ -313,12 +319,15 @@ GROUP
 # on Windows.
 export MSYS_NO_PATHCONV=1
 
+_tty=""
+[[ ${tty} == true ]] && _tty="--tty"
+
 [[ ${verbosity} -gt 0 ]] && set -x
 exec docker run \
    --platform ${platform} \
    --rm \
    --interactive \
-   --tty \
+   ${_tty} \
    --name "${boxed_name}" \
    --hostname "${boxed_name}" \
    --network "${boxed_network}" \
